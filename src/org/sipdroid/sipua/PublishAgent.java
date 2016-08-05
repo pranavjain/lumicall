@@ -64,12 +64,11 @@ public class PublishAgent implements TransactionClientListener
 
    }
 
-	public void publish(String status, String note, int expireTime)
+	public void publish(String status, int expireTime)
 	{
-
-		String tupleId=sip_provider.UAIdentity.replace("/", "").replace(":", "").toLowerCase();
-		String from = username+"@"+realm;
-		String entity="sip:"+username+"@"+realm;
+		String tupleId;
+		String from = user_profile.username+"@"+user_profile.realm;
+		String entity="sip:"+user_profile.username+"@"+user_profile.realm;
 		String xml=
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+
 						"<presence xmlns=\"urn:ietf:params:xml:ns:pidf\""+
@@ -78,15 +77,26 @@ public class PublishAgent implements TransactionClientListener
 						"<status>"+
 						"<basic>"+status+"</basic>"+
 						"</status>"+
-				"</tuple>"+
+						"</tuple>"+
 						"</presence>";
 		MessageFactory msgf = new MessageFactory();
 		Message req = msgf.createPublishRequest(sip_provider, new NameAddress(from), "presence", expireTime,"application/pidf+xml",xml);
 		TransactionClient t = new TransactionClient(sip_provider, req, this);
 		t.request();
-		run();
-
 	}
+
+
+    public void unPublish(String status, int expireTime)
+    {
+        String tupleId;
+        String from = user_profile.username+"@"+user_profile.realm;
+        String entity="sip:"+user_profile.username+"@"+user_profile.realm;
+        String xml;
+        MessageFactory msgf = new MessageFactory();
+        Message req = msgf.createPublishRequest(sip_provider, new NameAddress(from), "presence", expireTime,"application/pidf+xml",xml);
+        TransactionClient t = new TransactionClient(sip_provider, req, this);
+        t.request();
+    }
 
 	public void onTransSuccessResponse(TransactionClient tc, Message resp)
 	{  onDeliverySuccess(tc,resp.getStatusLine().getReason());
