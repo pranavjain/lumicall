@@ -21,15 +21,14 @@
 
 package org.sipdroid.sipua;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.UnknownHostException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.cert.CertificateException;
-import java.util.List;
+import android.content.Context;
+import android.content.SharedPreferences.Editor;
+import android.net.wifi.WifiManager;
+import android.os.Build;
+import android.os.PowerManager;
+import android.os.SystemClock;
+import android.preference.PreferenceManager;
+import android.util.Log;
 
 import org.ice4j.StackProperties;
 import org.lumicall.android.AndroidTimerFactory;
@@ -37,6 +36,7 @@ import org.lumicall.android.R;
 import org.lumicall.android.db.LumicallDataSource;
 import org.lumicall.android.db.SIPIdentity;
 import org.lumicall.android.sip.DialCandidateHelper;
+import org.omnidial.harvest.DialCandidate;
 import org.sipdroid.net.KeepAliveSip;
 import org.sipdroid.sipua.ui.ChangeAccount;
 import org.sipdroid.sipua.ui.LoopAlarm;
@@ -52,17 +52,10 @@ import org.zoolu.sip.provider.SipProvider;
 import org.zoolu.sip.provider.SipStack;
 import org.zoolu.tools.Timer;
 
-import android.content.Context;
-import android.content.SharedPreferences.Editor;
-import android.net.Uri;
-import android.net.wifi.WifiManager;
-import android.os.Build;
-import android.os.PowerManager;
-import android.os.SystemClock;
-import android.preference.PreferenceManager;
-import android.util.Log;
-
-import org.omnidial.harvest.DialCandidate;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyStore;
+import java.util.List;
 
 public class SipdroidEngine implements RegisterAgentListener {
 
@@ -78,7 +71,10 @@ public class SipdroidEngine implements RegisterAgentListener {
 
 	/** Register Agent */
 	public RegisterAgent[] ras;
-	
+
+    /** Publish Agent */
+    public PublishAgent[] pas;
+
 	/** Messaging */
 	public MessageAgent[] mas;
 
@@ -250,6 +246,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 
 			uas = new UserAgent[lineCount];
 			ras = new RegisterAgent[lineCount];
+            pas = new PublishAgent[lineCount];
 			mas = new MessageAgent[lineCount];
 			kas = new KeepAliveSip[lineCount];
 			lastmsgs = new String[lineCount];
@@ -307,10 +304,12 @@ public class SipdroidEngine implements RegisterAgentListener {
 							user_profile.contact_url, user_profile.username,
 							user_profile.realm, user_profile.passwd, this, user_profile,
 							user_profile.qvalue, icsi, user_profile.pub, user_profile.mwi);
+                        pas[i] = new PublishAgent(sip_providers[i], user_profile);
 						mas[i] = new MessageAgent(sip_providers[i], user_profile, messageManager);
 						mas[i].receive();
 					} else {
 						ras[i] = null;
+                        pas[i] = null;
 						mas[i] = null;
 					}
 					kas[i] = new KeepAliveSip(sip_providers[i],100000);
