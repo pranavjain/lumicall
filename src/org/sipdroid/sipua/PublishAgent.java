@@ -44,30 +44,27 @@ public class PublishAgent implements TransactionClientListener
 	/** SipProvider */
 	protected SipProvider sip_provider;
 
-	/** Message listener */
-	protected MessageAgentListener listener;
 
 
 	/** Costructs a new MessageAgent. */
-	public PublishAgent(SipProvider sip_provider, UserAgentProfile user_profile, MessageAgentListener listener)
+	public PublishAgent(SipProvider sip_provider, UserAgentProfile user_profile)
 	{  this.sip_provider=sip_provider;
-		this.listener=listener;
 		this.user_profile=user_profile;
 
 	}
-	public void publish(String status, int expireTime, String note)
+	public void publish(String status, long expireTime, String note)
 	{
-        MessageDigest md = null;
+		MessageDigest md = null;
 
-        try {
-            md = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        byte[] md5bytes = md.digest(user_profile.username.getBytes());
-        String tupleId = md5bytes.toString();
+		try {
+			md = MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		byte[] md5bytes = md.digest(user_profile.username.getBytes());
+		String tupleId = md5bytes.toString();
 
-        String from = user_profile.username+"@"+user_profile.realm;
+		String from = user_profile.username+"@"+user_profile.realm;
 		String entity="sip:"+user_profile.username+"@"+user_profile.realm;
 		String xml=
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+
@@ -76,7 +73,7 @@ public class PublishAgent implements TransactionClientListener
 						"<tuple id=\""+ tupleId +"\">"+
 						"<status>"+
 						"<basic>"+status+"</basic>"+
-                        "<note>"+note+"</note>"+
+						"<note>"+note+"</note>"+
 						"</status>"+
 						"</tuple>"+
 						"</presence>";
@@ -87,11 +84,9 @@ public class PublishAgent implements TransactionClientListener
 	}
 
 
-	public void unPublish(String status, int expireTime)
+	public void unPublish(long expireTime)
 	{
-		String tupleId;
 		String from = user_profile.username+"@"+user_profile.realm;
-		String entity="sip:"+user_profile.username+"@"+user_profile.realm;
 		MessageFactory msgf = new MessageFactory();
 		Message req = msgf.createPublishRequest(sip_provider, new NameAddress(from), "presence", expireTime,null,null);
 		TransactionClient t = new TransactionClient(sip_provider, req, this);

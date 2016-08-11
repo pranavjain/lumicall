@@ -74,7 +74,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 
     /** Publish Agent */
     public PublishAgent[] pas;
-
+    String status = "online";
 	/** Messaging */
 	public MessageAgent[] mas;
 
@@ -400,6 +400,10 @@ public class SipdroidEngine implements RegisterAgentListener {
 			}
 			i++;
 		}
+		for (PublishAgent pa : pas) {
+            pa.publish(status,Receiver.expire_time,"hi");
+			i++;
+		}
 		register();
 	}
 	
@@ -411,6 +415,8 @@ public class SipdroidEngine implements RegisterAgentListener {
 					user_profiles[i].realm.equals("")) return;
 
 			RegisterAgent ra = ras[i];
+            PublishAgent pa = pas[i];
+            pa.unPublish(Receiver.expire_time);
 			if (ra != null && ra.unregister()) {
 				Receiver.alarm(0, LoopAlarm.class);
 				Receiver.onText(Receiver.REGISTER_NOTIFICATION+i,getUIContext().getString(R.string.reg),R.drawable.sym_presence_idle,0);
@@ -440,7 +446,12 @@ public class SipdroidEngine implements RegisterAgentListener {
 			}
 			i++;
 		}
-	}
+        for (PublishAgent pa : pas) {
+            pa.publish(status,Receiver.expire_time,"hi");
+            i++;
+        }
+
+    }
 	
 	public void register() {
 		IpAddress.setLocalIpAddress();
@@ -467,6 +478,10 @@ public class SipdroidEngine implements RegisterAgentListener {
 			}
 			i++;
 		}
+        for (PublishAgent pa : pas) {
+            pa.publish(status,Receiver.expire_time,"hi");
+            i++;
+        }
 	}
 	
 	public void registerUdp() {
@@ -497,6 +512,10 @@ public class SipdroidEngine implements RegisterAgentListener {
 			}
 			i++;
 		}
+        for (PublishAgent pa : pas) {
+            pa.publish(status,Receiver.expire_time,"hi");
+            i++;
+        }
 	}
 
 	public void halt() { // modified
@@ -527,7 +546,11 @@ public class SipdroidEngine implements RegisterAgentListener {
 			if (sip_providers[i] != null)
 				sip_providers[i].halt();
 			i++;
-		}
+        }
+        for (PublishAgent pa : pas) {
+            pa.publish(status,Receiver.expire_time,"hi");
+            i++;
+        }
 	}
 
 	public boolean isRegistered()
@@ -577,6 +600,10 @@ public class SipdroidEngine implements RegisterAgentListener {
     		if (ra == mwi_ra) break;
     		i++;
     	}
+        for (PublishAgent pa : pas) {
+            pa.publish(status,Receiver.expire_time,"hi");
+            i++;
+        }
     	if (i != pref) return;
 		if (voicemail) {
 			String msgs = getUIContext().getString(R.string.voicemail);
