@@ -22,6 +22,10 @@
 package org.sipdroid.sipua;
 
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+
 import org.zoolu.sip.address.NameAddress;
 import org.zoolu.sip.message.Message;
 import org.zoolu.sip.message.MessageFactory;
@@ -44,6 +48,8 @@ public class PublishAgent implements TransactionClientListener
 	/** SipProvider */
 	protected SipProvider sip_provider;
 
+	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences();
+	Boolean publish_enable_status  = prefs.getBoolean("publish_enable",true);
 
 
 	/** Costructs a new MessageAgent. */
@@ -52,45 +58,47 @@ public class PublishAgent implements TransactionClientListener
 		this.user_profile=user_profile;
 
 	}
-	public void publish(String status, long expireTime, String note)
-	{
-		MessageDigest md = null;
+	public void publish(String status, long expireTime, String note) {
 
-		try {
-			md = MessageDigest.getInstance("MD5");
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
+		if (publish_enable_status == true) {
+			MessageDigest md = null;
+
+			try {
+				md = MessageDigest.getInstance("MD5");
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+			}
+			byte[] md5bytes = md.digest(user_profile.username.getBytes());
+			String tupleId = md5bytes.toString();
+
+			String from = user_profile.username + "@" + user_profile.realm;
+			String entity = "sip:" + user_profile.username + "@" + user_profile.realm;
+			String xml =
+					"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+							"<presence xmlns=\"urn:ietf:params:xml:ns:pidf\"" +
+							"entity=\"" + entity + "\">" +
+							"<tuple id=\"" + tupleId + "\">" +
+							"<status>" +
+							"<basic>" + status + "</basic>" +
+							"<note>" + note + "</note>" +
+							"</status>" +
+							"</tuple>" +
+							"</presence>";
+			MessageFactory msgf = new MessageFactory();
+			Message req = msgf.createPublishRequest(sip_provider, new NameAddress(from), "presence", expireTime, "application/pidf+xml", xml);
+			TransactionClient t = new TransactionClient(sip_provider, req, this);
+			t.request();
 		}
-		byte[] md5bytes = md.digest(user_profile.username.getBytes());
-		String tupleId = md5bytes.toString();
-
-		String from = user_profile.username+"@"+user_profile.realm;
-		String entity="sip:"+user_profile.username+"@"+user_profile.realm;
-		String xml=
-				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+
-						"<presence xmlns=\"urn:ietf:params:xml:ns:pidf\""+
-						"entity=\""+ entity +"\">"+
-						"<tuple id=\""+ tupleId +"\">"+
-						"<status>"+
-						"<basic>"+status+"</basic>"+
-						"<note>"+note+"</note>"+
-						"</status>"+
-						"</tuple>"+
-						"</presence>";
-		MessageFactory msgf = new MessageFactory();
-		Message req = msgf.createPublishRequest(sip_provider, new NameAddress(from), "presence", expireTime,"application/pidf+xml",xml);
-		TransactionClient t = new TransactionClient(sip_provider, req, this);
-		t.request();
 	}
 
-
-	public void unPublish(long expireTime)
-	{
-		String from = user_profile.username+"@"+user_profile.realm;
-		MessageFactory msgf = new MessageFactory();
-		Message req = msgf.createPublishRequest(sip_provider, new NameAddress(from), "presence", expireTime,null,null);
-		TransactionClient t = new TransactionClient(sip_provider, req, this);
-		t.request();
+	public void unPublish(long expireTime) {
+		if (publish_enable_status == true) {
+			String from = user_profile.username + "@" + user_profile.realm;
+			MessageFactory msgf = new MessageFactory();
+			Message req = msgf.createPublishRequest(sip_provider, new NameAddress(from), "presence", expireTime, null, null);
+			TransactionClient t = new TransactionClient(sip_provider, req, this);
+			t.request();
+		}
 	}
 
 	public void onTransSuccessResponse(TransactionClient tc, Message resp)
