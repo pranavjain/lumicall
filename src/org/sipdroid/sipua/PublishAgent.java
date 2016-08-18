@@ -22,10 +22,6 @@
 package org.sipdroid.sipua;
 
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-
 import org.zoolu.sip.address.NameAddress;
 import org.zoolu.sip.message.Message;
 import org.zoolu.sip.message.MessageFactory;
@@ -38,7 +34,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 
 
-
 public class PublishAgent implements TransactionClientListener
 {
 
@@ -48,9 +43,9 @@ public class PublishAgent implements TransactionClientListener
 	/** SipProvider */
 	protected SipProvider sip_provider;
 	public String status;
-	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences();
-	Boolean publish_enable_status  = prefs.getBoolean("publish_enable",true);
-
+	//SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences();
+	//Boolean publish_enable_status  = prefs.getBoolean("publish_enable",true);
+	Boolean publish_enable_status=true;
 
 	/** Costructs a new MessageAgent. */
 	public PublishAgent(SipProvider sip_provider, UserAgentProfile user_profile)
@@ -62,10 +57,10 @@ public class PublishAgent implements TransactionClientListener
 	{
 		status="open";
 	}
-	public void publish(String status, long expireTime, String note) {
+	public void publish(String status, int expireTime, String note) {
 
 		if (publish_enable_status == true) {
-			status=this.status;
+			this.status=status;
 			MessageDigest md = null;
 			String tupleId;
 			try {
@@ -77,8 +72,8 @@ public class PublishAgent implements TransactionClientListener
 				e.printStackTrace();
 			}
 
-			String from = user_profile.username + "@" + user_profile.realm;
-			String entity = "sip:" + user_profile.username + "@" + user_profile.realm;
+			String from = user_profile.username;
+			String entity = "sip:" + user_profile.username;
 			String xml =
 					"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
 							"<presence xmlns=\"urn:ietf:params:xml:ns:pidf\"" +
@@ -97,7 +92,7 @@ public class PublishAgent implements TransactionClientListener
 		}
 	}
 
-	public void unPublish(long expireTime, String from) {
+	public void unPublish(int expireTime, String from) {
 		if (publish_enable_status == true) {
 			MessageFactory msgf = new MessageFactory();
 			Message req = msgf.createPublishRequest(sip_provider, new NameAddress(from), "presence", expireTime, null, null);

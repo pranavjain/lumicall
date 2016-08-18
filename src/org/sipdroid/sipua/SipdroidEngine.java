@@ -82,6 +82,8 @@ public class SipdroidEngine implements RegisterAgentListener {
 	public PublishAgent[] pas;
 	String status = "open";
 	String note;
+	// FIXME - make Expires configurable
+	int expire_time=60;
 	/**
 	 * Messaging
 	 */
@@ -415,7 +417,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 		}
 		register();
 		for (PublishAgent pa : pas) {
-			pa.publish(status, Receiver.expire_time, note);
+			pa.publish(status, expire_time, note);
 		}
 	}
 
@@ -439,7 +441,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 	public void unpublish (int i) {
 		PublishAgent pa = pas[i];
 		String from = user_profiles[i].username + "@" + user_profiles[i].realm;
-		pa.unPublish(Receiver.expire_time,from);
+		pa.unPublish(expire_time,from);
 	}
 
 	public void registerMore() {
@@ -464,7 +466,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 			i++;
 		}
 		for (PublishAgent pa : pas) {
-			pa.publish(status, Receiver.expire_time, note);
+			pa.publish(status,expire_time, note);
 		}
 
 	}
@@ -495,7 +497,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 			i++;
 		}
 		for (PublishAgent pa : pas) {
-			pa.publish(status, Receiver.expire_time, note);
+			pa.publish(status, expire_time, note);
 			i++;
 		}
 	}
@@ -529,7 +531,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 			i++;
 		}
 		for (PublishAgent pa : pas) {
-			pa.publish(status, Receiver.expire_time, note);
+			pa.publish(status,expire_time, note);
 		}
 	}
 
