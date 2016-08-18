@@ -47,7 +47,7 @@ public class PublishAgent implements TransactionClientListener
 	private Logger logger = Logger.getLogger(getClass().getCanonicalName());
 	/** SipProvider */
 	protected SipProvider sip_provider;
-
+	public String status;
 	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences();
 	Boolean publish_enable_status  = prefs.getBoolean("publish_enable",true);
 
@@ -58,18 +58,24 @@ public class PublishAgent implements TransactionClientListener
 		this.user_profile=user_profile;
 
 	}
+	public void publish()
+	{
+		status="open";
+	}
 	public void publish(String status, long expireTime, String note) {
 
 		if (publish_enable_status == true) {
+			status=this.status;
 			MessageDigest md = null;
-
+			String tupleId;
 			try {
 				md = MessageDigest.getInstance("MD5");
+				byte[] md5bytes = md.digest(user_profile.username.getBytes());
+				tupleId = md5bytes.toString();
 			} catch (NoSuchAlgorithmException e) {
+				tupleId=user_profile.username;
 				e.printStackTrace();
 			}
-			byte[] md5bytes = md.digest(user_profile.username.getBytes());
-			String tupleId = md5bytes.toString();
 
 			String from = user_profile.username + "@" + user_profile.realm;
 			String entity = "sip:" + user_profile.username + "@" + user_profile.realm;
@@ -91,9 +97,8 @@ public class PublishAgent implements TransactionClientListener
 		}
 	}
 
-	public void unPublish(long expireTime) {
+	public void unPublish(long expireTime, String from) {
 		if (publish_enable_status == true) {
-			String from = user_profile.username + "@" + user_profile.realm;
 			MessageFactory msgf = new MessageFactory();
 			Message req = msgf.createPublishRequest(sip_provider, new NameAddress(from), "presence", expireTime, null, null);
 			TransactionClient t = new TransactionClient(sip_provider, req, this);
@@ -107,6 +112,12 @@ public class PublishAgent implements TransactionClientListener
 	public void onTransFailureResponse(TransactionClient tc, Message resp) {
 
 	}
+
+	@Override
+	public void onTransTimeout(TransactionClient tc) {
+
+	}
+
 	public void onTransProvisionalResponse(TransactionClient tc, Message resp)
 	{
 	}

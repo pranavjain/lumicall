@@ -413,11 +413,10 @@ public class SipdroidEngine implements RegisterAgentListener {
 			}
 			i++;
 		}
+		register();
 		for (PublishAgent pa : pas) {
 			pa.publish(status, Receiver.expire_time, note);
-			i++;
 		}
-		register();
 	}
 
 	public void unregister(int i) {
@@ -429,14 +428,18 @@ public class SipdroidEngine implements RegisterAgentListener {
 			return;
 
 		RegisterAgent ra = ras[i];
-		PublishAgent pa = pas[i];
-		pa.unPublish(Receiver.expire_time);
 		if (ra != null && ra.unregister()) {
 			Receiver.alarm(0, LoopAlarm.class);
 			Receiver.onText(Receiver.REGISTER_NOTIFICATION + i, getUIContext().getString(R.string.reg), R.drawable.sym_presence_idle, 0);
 			wl[i].acquire();
 		} else
 			Receiver.onText(Receiver.REGISTER_NOTIFICATION + i, null, 0, 0);
+	}
+
+	public void unpublish (int i) {
+		PublishAgent pa = pas[i];
+		String from = user_profiles[i].username + "@" + user_profiles[i].realm;
+		pa.unPublish(Receiver.expire_time,from);
 	}
 
 	public void registerMore() {
@@ -527,7 +530,6 @@ public class SipdroidEngine implements RegisterAgentListener {
 		}
 		for (PublishAgent pa : pas) {
 			pa.publish(status, Receiver.expire_time, note);
-			i++;
 		}
 	}
 
@@ -562,7 +564,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 			i++;
 		}
 		for (PublishAgent pa : pas) {
-			pa.unPublish(Receiver.expire_time);
+			unpublish(i);
 		}
 	}
 
