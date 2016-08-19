@@ -23,6 +23,13 @@ package org.sipdroid.sipua;
 
 
 import org.zoolu.sip.address.NameAddress;
+import org.zoolu.sip.authentication.DigestAuthentication;
+import org.zoolu.sip.header.AuthorizationHeader;
+import org.zoolu.sip.header.ProxyAuthenticateHeader;
+import org.zoolu.sip.header.ProxyAuthorizationHeader;
+import org.zoolu.sip.header.StatusLine;
+import org.zoolu.sip.header.ViaHeader;
+import org.zoolu.sip.header.WwwAuthenticateHeader;
 import org.zoolu.sip.message.Message;
 import org.zoolu.sip.message.MessageFactory;
 import org.zoolu.sip.provider.SipProvider;
@@ -39,6 +46,18 @@ public class PublishAgent implements TransactionClientListener
 
 	/** UserProfile */
 	protected UserAgentProfile user_profile;
+	/** User name. */
+	String username;
+
+	/** User realm. */
+	String realm;
+	/** Nonce for the next authentication. */
+	String next_nonce;
+	/** Qop for the next authentication. */
+	String qop;
+	/** User's passwd. */
+	String passwd;
+
 	private Logger logger = Logger.getLogger(getClass().getCanonicalName());
 	/** SipProvider */
 	protected SipProvider sip_provider;
@@ -48,9 +67,15 @@ public class PublishAgent implements TransactionClientListener
 	Boolean publish_enable_status=true;
 
 	/** Costructs a new MessageAgent. */
-	public PublishAgent(SipProvider sip_provider, UserAgentProfile user_profile)
-	{  this.sip_provider=sip_provider;
+	public PublishAgent(SipProvider sip_provider, UserAgentProfile user_profile,String username, String realm, String passwd)
+	{
+		this.sip_provider=sip_provider;
 		this.user_profile=user_profile;
+		this.username = username;
+		this.realm = realm;
+		this.passwd = passwd;
+		this.next_nonce=null;
+		this.qop=null;
 
 	}
 	public void publish()
@@ -72,12 +97,12 @@ public class PublishAgent implements TransactionClientListener
 				e.printStackTrace();
 			}
 
-			String from = user_profile.username;
+			String from = user_profile.username ;
 			String entity = "sip:" + user_profile.username;
 			String xml =
 					"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
 							"<presence xmlns=\"urn:ietf:params:xml:ns:pidf\"" +
-							"entity=\"" + entity + "\">" +
+							" entity=\"" + entity + "\">" +
 							"<tuple id=\"" + tupleId + "\">" +
 							"<status>" +
 							"<basic>" + status + "</basic>" +
@@ -87,6 +112,15 @@ public class PublishAgent implements TransactionClientListener
 							"</presence>";
 			MessageFactory msgf = new MessageFactory();
 			Message req = msgf.createPublishRequest(sip_provider, new NameAddress(from), "presence", expireTime, "application/pidf+xml", xml);
+/*	AuthorizationHeader ah = new AuthorizationHeader("Digest");
+			ah.addUsernameParam(username);
+			ah.addRealmParam(realm);
+			ah.addUriParam(req.getRequestLine().getAddress().toString());
+			String response = (new DigestAuthentication(SipMethods.REGISTER,
+					ah, null, passwd)).getResponse();
+			ah.addResponseParam(response);
+			req.setAuthorizationHeader(ah);*/
+
 			TransactionClient t = new TransactionClient(sip_provider, req, this);
 			t.request();
 		}
@@ -100,14 +134,65 @@ public class PublishAgent implements TransactionClientListener
 			t.request();
 		}
 	}
+	private boolean generateRequestWithProxyAuthorizationheader(Message resp, Message req)
+	{
+ProxyAuthenticateHeader pah = resp.getProxyAuthenticateHeader();
+			ProxyAuthorizationHeader ah1 = (new DigestAuthentication(
+					req.getTransactionMethod(), req.getRequestLine().getAddress()
+					.toString(), pah, null, null, username, passwd))
+					.getProxyAuthorizationHeader();
+			req.setProxyAuthorizationHeader(ah1);
+		return true;
+	}
 
 	public void onTransSuccessResponse(TransactionClient tc, Message resp)
 	{
 	}
 	public void onTransFailureResponse(TransactionClient tc, Message resp) {
+		StatusLine status = resp.getStatusLine();
+		System.out.println("CheckCheck");
+		int code = status.getCode();
+		processAuthenticationResponse(tc, resp, code);
+
 
 	}
+	private boolean processAuthenticationResponse(TransactionClient transaction, Message resp, int respCode)
+	{
+		Message req = transaction.getRequestMessage();
+		req.setCSeqHeader(req.getCSeqHeader().incSequenceNumber());
+		ViaHeader vh=req.getViaHeader();
+		String newbranch = SipProvider.pickBranch();
+		vh.setBranch(newbranch);
+		req.removeViaHeader();
+		req.addViaHeader(vh);
+		handleAuthentication(respCode, resp, req);
+		TransactionClient t = new TransactionClient(sip_provider, req, this, 30000);
+		t.request();
+		return true;
+	}
+	private boolean generateRequestWithWwwAuthorizationheader(Message resp, Message req){
+		WwwAuthenticateHeader wah = resp.getWwwAuthenticateHeader();
 
+
+		AuthorizationHeader ah = (new DigestAuthentication(
+				req.getTransactionMethod(), req.getRequestLine().getAddress()
+				.toString(), wah, null, null, user_profile.username, user_profile.passwd))
+				.getAuthorizationHeader();
+		req.setAuthorizationHeader(ah);
+		return true;
+
+	}
+	private boolean handleAuthentication(int respCode, Message resp, Message req)
+	{
+
+		switch (respCode) {
+			case 407:
+				return generateRequestWithProxyAuthorizationheader(resp, req);
+			case 401:
+				return generateRequestWithWwwAuthorizationheader(resp, req);
+		}
+		return false;
+	}
 	@Override
 	public void onTransTimeout(TransactionClient tc) {
 
