@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Luca Veltri - University of Parma - Italy
+ * Copyright (C) 2016 Pranav Jain - The NorthCap University - India
  *
  * This source code is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Author(s):
- * Luca Veltri (luca.veltri@unipr.it)
+ * Pranav Jain (contact@pranavjain.me)
  */
 
 package org.sipdroid.sipua;
 
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 import org.zoolu.sip.address.NameAddress;
 import org.zoolu.sip.authentication.DigestAuthentication;
@@ -41,63 +45,84 @@ import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 
 
-public class PublishAgent implements TransactionClientListener
-{
+public class PublishAgent implements TransactionClientListener {
 
-	/** UserProfile */
+	/**
+	 * UserProfile
+	 */
 	protected UserAgentProfile user_profile;
-	/** User name. */
+	/**
+	 * User name.
+	 */
 	String username;
 
-	/** User realm. */
+	/**
+	 * User realm.
+	 */
 	String realm;
-	/** Nonce for the next authentication. */
+	/**
+	 * Nonce for the next authentication.
+	 */
 	String next_nonce;
-	/** Qop for the next authentication. */
+	/**
+	 * Qop for the next authentication.
+	 */
 	String qop;
-	/** User's passwd. */
+	/**
+	 * User's passwd.
+	 */
 	String passwd;
 
 	private Logger logger = Logger.getLogger(getClass().getCanonicalName());
-	/** SipProvider */
+	/**
+	 * SipProvider
+	 */
 	protected SipProvider sip_provider;
-	public String status;
-	//SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences();
-	//Boolean publish_enable_status  = prefs.getBoolean("publish_enable",true);
-	Boolean publish_enable_status=true;
+	Context context;
 
-	/** Costructs a new MessageAgent. */
-	public PublishAgent(SipProvider sip_provider, UserAgentProfile user_profile,String username, String realm, String passwd)
-	{
-		this.sip_provider=sip_provider;
-		this.user_profile=user_profile;
+	/**
+	 * Costructs a new MessageAgent.
+	 */
+	public PublishAgent(SipProvider sip_provider, UserAgentProfile user_profile, String username, String realm, String passwd, Context context) {
+		this.sip_provider = sip_provider;
+		this.user_profile = user_profile;
 		this.username = username;
 		this.realm = realm;
 		this.passwd = passwd;
-		this.next_nonce=null;
-		this.qop=null;
+		this.next_nonce = null;
+		this.qop = null;
+		this.context = context;
 
 	}
-	public void publish()
-	{
-		status="open";
+
+	public void publish() {
+		this.publish("open", 60, " ");
 	}
+
 	public void publish(String status, int expireTime, String note) {
-
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+		Boolean publish_enable_status = prefs.getBoolean("publish_enable", true);
 		if (publish_enable_status == true) {
-			this.status=status;
 			MessageDigest md = null;
 			String tupleId;
 			try {
 				md = MessageDigest.getInstance("MD5");
-				byte[] md5bytes = md.digest(user_profile.username.getBytes());
-				tupleId = md5bytes.toString();
+				tupleId =  md.digest(user_profile.username.getBytes()).toString();
 			} catch (NoSuchAlgorithmException e) {
-				tupleId=user_profile.username;
+				tupleId = user_profile.username;
 				e.printStackTrace();
 			}
 
-			String from = user_profile.username ;
+			;
+			/*try {
+				md = MessageDigest.getInstance("MD5");
+				byte[] md5bytes = md.digest(user_profile.username.getBytes());
+				tupleId = md5bytes.toString();
+			} catch (NoSuchAlgorithmException e) {
+				tupleId=
+				e.printStackTrace();
+			}*/
+			String from = user_profile.username;
 			String entity = "sip:" + user_profile.username;
 			String xml =
 					"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -112,55 +137,47 @@ public class PublishAgent implements TransactionClientListener
 							"</presence>";
 			MessageFactory msgf = new MessageFactory();
 			Message req = msgf.createPublishRequest(sip_provider, new NameAddress(from), "presence", expireTime, "application/pidf+xml", xml);
-/*	AuthorizationHeader ah = new AuthorizationHeader("Digest");
-			ah.addUsernameParam(username);
-			ah.addRealmParam(realm);
-			ah.addUriParam(req.getRequestLine().getAddress().toString());
-			String response = (new DigestAuthentication(SipMethods.REGISTER,
-					ah, null, passwd)).getResponse();
-			ah.addResponseParam(response);
-			req.setAuthorizationHeader(ah);*/
-
 			TransactionClient t = new TransactionClient(sip_provider, req, this);
 			t.request();
 		}
 	}
 
-	public void unPublish(int expireTime, String from) {
+	public void unPublish() {
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+		String from = user_profile.username;
+		Boolean publish_enable_status = prefs.getBoolean("publish_enable", true);
 		if (publish_enable_status == true) {
 			MessageFactory msgf = new MessageFactory();
-			Message req = msgf.createPublishRequest(sip_provider, new NameAddress(from), "presence", expireTime, null, null);
+			Message req = msgf.createPublishRequest(sip_provider, new NameAddress(from), "presence", 0, null, null);
 			TransactionClient t = new TransactionClient(sip_provider, req, this);
 			t.request();
 		}
 	}
-	private boolean generateRequestWithProxyAuthorizationheader(Message resp, Message req)
-	{
-ProxyAuthenticateHeader pah = resp.getProxyAuthenticateHeader();
-			ProxyAuthorizationHeader ah1 = (new DigestAuthentication(
-					req.getTransactionMethod(), req.getRequestLine().getAddress()
-					.toString(), pah, null, null, username, passwd))
-					.getProxyAuthorizationHeader();
-			req.setProxyAuthorizationHeader(ah1);
+
+	private boolean generateRequestWithProxyAuthorizationheader(Message resp, Message req) {
+		ProxyAuthenticateHeader pah = resp.getProxyAuthenticateHeader();
+		ProxyAuthorizationHeader ah1 = (new DigestAuthentication(
+				req.getTransactionMethod(), req.getRequestLine().getAddress()
+				.toString(), pah, null, null, username, passwd))
+				.getProxyAuthorizationHeader();
+		req.setProxyAuthorizationHeader(ah1);
 		return true;
 	}
 
-	public void onTransSuccessResponse(TransactionClient tc, Message resp)
-	{
+	public void onTransSuccessResponse(TransactionClient tc, Message resp) {
 	}
+
 	public void onTransFailureResponse(TransactionClient tc, Message resp) {
 		StatusLine status = resp.getStatusLine();
 		System.out.println("CheckCheck");
 		int code = status.getCode();
 		processAuthenticationResponse(tc, resp, code);
-
-
 	}
-	private boolean processAuthenticationResponse(TransactionClient transaction, Message resp, int respCode)
-	{
+
+	private boolean processAuthenticationResponse(TransactionClient transaction, Message resp, int respCode) {
 		Message req = transaction.getRequestMessage();
 		req.setCSeqHeader(req.getCSeqHeader().incSequenceNumber());
-		ViaHeader vh=req.getViaHeader();
+		ViaHeader vh = req.getViaHeader();
 		String newbranch = SipProvider.pickBranch();
 		vh.setBranch(newbranch);
 		req.removeViaHeader();
@@ -170,10 +187,9 @@ ProxyAuthenticateHeader pah = resp.getProxyAuthenticateHeader();
 		t.request();
 		return true;
 	}
-	private boolean generateRequestWithWwwAuthorizationheader(Message resp, Message req){
+
+	private boolean generateRequestWithWwwAuthorizationheader(Message resp, Message req) {
 		WwwAuthenticateHeader wah = resp.getWwwAuthenticateHeader();
-
-
 		AuthorizationHeader ah = (new DigestAuthentication(
 				req.getTransactionMethod(), req.getRequestLine().getAddress()
 				.toString(), wah, null, null, user_profile.username, user_profile.passwd))
@@ -182,9 +198,8 @@ ProxyAuthenticateHeader pah = resp.getProxyAuthenticateHeader();
 		return true;
 
 	}
-	private boolean handleAuthentication(int respCode, Message resp, Message req)
-	{
 
+	private boolean handleAuthentication(int respCode, Message resp, Message req) {
 		switch (respCode) {
 			case 407:
 				return generateRequestWithProxyAuthorizationheader(resp, req);
@@ -193,13 +208,14 @@ ProxyAuthenticateHeader pah = resp.getProxyAuthenticateHeader();
 		}
 		return false;
 	}
+
 	@Override
 	public void onTransTimeout(TransactionClient tc) {
 
 	}
 
-	public void onTransProvisionalResponse(TransactionClient tc, Message resp)
-	{
+	public void onTransProvisionalResponse(TransactionClient tc, Message resp) {
+
 	}
 
 

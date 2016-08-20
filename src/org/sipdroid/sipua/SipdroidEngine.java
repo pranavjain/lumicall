@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2016 Pranav Jain - The NorthCap University - India
  * Copyright (C) 2009 The Sipdroid Open Source Project
  * Copyright (C) 2008 Hughes Systique Corporation, USA (http://www.hsc.com)
  * 
@@ -80,10 +81,6 @@ public class SipdroidEngine implements RegisterAgentListener {
 	 * Publish Agent
 	 */
 	public PublishAgent[] pas;
-	String status = "open";
-	String note;
-	// FIXME - make Expires configurable
-	int expire_time=60;
 	/**
 	 * Messaging
 	 */
@@ -318,7 +315,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 							user_profile.contact_url, user_profile.username,
 							user_profile.realm, user_profile.passwd, this, user_profile,
 							user_profile.qvalue, icsi, user_profile.pub, user_profile.mwi);
-					pas[i] = new PublishAgent(sip_providers[i], user_profile);
+					pas[i] = new PublishAgent(sip_providers[i], user_profile,user_profile.username,user_profile.realm,user_profile.passwd,context);
 					mas[i] = new MessageAgent(sip_providers[i], user_profile, messageManager);
 					mas[i].receive();
 				} else {
@@ -417,7 +414,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 		}
 		register();
 		for (PublishAgent pa : pas) {
-			pa.publish(status, expire_time, note);
+			pa.publish();
 		}
 	}
 
@@ -441,7 +438,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 	public void unpublish (int i) {
 		PublishAgent pa = pas[i];
 		String from = user_profiles[i].username + "@" + user_profiles[i].realm;
-		pa.unPublish(expire_time,from);
+		pa.unPublish();
 	}
 
 	public void registerMore() {
@@ -466,7 +463,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 			i++;
 		}
 		for (PublishAgent pa : pas) {
-			pa.publish(status,expire_time, note);
+			pa.publish();
 		}
 
 	}
@@ -497,7 +494,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 			i++;
 		}
 		for (PublishAgent pa : pas) {
-			pa.publish(status, expire_time, note);
+			pa.publish();
 			i++;
 		}
 	}
@@ -531,7 +528,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 			i++;
 		}
 		for (PublishAgent pa : pas) {
-			pa.publish(status,expire_time, note);
+			pa.publish();
 		}
 	}
 
@@ -567,6 +564,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 		}
 		for (PublishAgent pa : pas) {
 			unpublish(i);
+			i++;
 		}
 	}
 
