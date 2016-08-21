@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Pranav Jain - The NorthCap University - India
+ * Copyright (C) 2016 Pranav Jain
  *
  * This source code is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@ import org.zoolu.sip.header.WwwAuthenticateHeader;
 import org.zoolu.sip.message.Message;
 import org.zoolu.sip.message.MessageFactory;
 import org.zoolu.sip.provider.SipProvider;
+import org.zoolu.sip.provider.SipStack;
 import org.zoolu.sip.transaction.TransactionClient;
 import org.zoolu.sip.transaction.TransactionClientListener;
 
@@ -72,6 +73,10 @@ public class PublishAgent implements TransactionClientListener {
 	 * User's passwd.
 	 */
 	String passwd;
+	/**
+	 * Expiration time.
+	 */
+	int expire_time;
 
 	private Logger logger = Logger.getLogger(getClass().getCanonicalName());
 	/**
@@ -96,7 +101,8 @@ public class PublishAgent implements TransactionClientListener {
 	}
 
 	public void publish() {
-		this.publish("open", 60, " ");
+		this.expire_time=SipStack.default_expires;
+		this.publish("open", expire_time, " ");
 	}
 
 	public void publish(String status, int expireTime, String note) {
@@ -112,16 +118,6 @@ public class PublishAgent implements TransactionClientListener {
 				tupleId = user_profile.username;
 				e.printStackTrace();
 			}
-
-			;
-			/*try {
-				md = MessageDigest.getInstance("MD5");
-				byte[] md5bytes = md.digest(user_profile.username.getBytes());
-				tupleId = md5bytes.toString();
-			} catch (NoSuchAlgorithmException e) {
-				tupleId=
-				e.printStackTrace();
-			}*/
 			String from = user_profile.username;
 			String entity = "sip:" + user_profile.username;
 			String xml =

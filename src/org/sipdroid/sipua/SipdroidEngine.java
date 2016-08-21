@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Pranav Jain - The NorthCap University - India
+ * Copyright (C) 2016 Pranav Jain
  * Copyright (C) 2009 The Sipdroid Open Source Project
  * Copyright (C) 2008 Hughes Systique Corporation, USA (http://www.hsc.com)
  * 
