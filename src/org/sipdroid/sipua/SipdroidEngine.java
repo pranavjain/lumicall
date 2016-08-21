@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2016 Pranav Jain
  * Copyright (C) 2009 The Sipdroid Open Source Project
  * Copyright (C) 2008 Hughes Systique Corporation, USA (http://www.hsc.com)
+ * Copyright (C) 2016 Pranav Jain
  * 
  * This file is part of Sipdroid (http://www.sipdroid.org)
  * 
@@ -437,8 +437,9 @@ public class SipdroidEngine implements RegisterAgentListener {
 
 	public void unpublish (int i) {
 		PublishAgent pa = pas[i];
-		String from = user_profiles[i].username + "@" + user_profiles[i].realm;
-		pa.unPublish();
+		if (pa != null) {
+			pa.unPublish();
+		}
 	}
 
 	public void registerMore() {
@@ -463,7 +464,9 @@ public class SipdroidEngine implements RegisterAgentListener {
 			i++;
 		}
 		for (PublishAgent pa : pas) {
-			pa.publish();
+			if (pa != null) {
+				pa.publish();
+			}
 		}
 
 	}
@@ -495,7 +498,6 @@ public class SipdroidEngine implements RegisterAgentListener {
 		}
 		for (PublishAgent pa : pas) {
 			pa.publish();
-			i++;
 		}
 	}
 
@@ -528,7 +530,9 @@ public class SipdroidEngine implements RegisterAgentListener {
 			i++;
 		}
 		for (PublishAgent pa : pas) {
-			pa.publish();
+			if (pa != null) {
+				pa.publish();
+			}
 		}
 	}
 
@@ -562,6 +566,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 				sip_providers[i].halt();
 			i++;
 		}
+		i=0;
 		for (PublishAgent pa : pas) {
 			unpublish(i);
 			i++;
