@@ -40,6 +40,7 @@ import org.zoolu.sip.provider.SipProvider;
 import org.zoolu.sip.provider.SipStack;
 import org.zoolu.sip.transaction.TransactionClient;
 import org.zoolu.sip.transaction.TransactionClientListener;
+import org.zoolu.tools.LogLevel;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -56,7 +57,6 @@ public class PublishAgent implements TransactionClientListener {
 	 * User name.
 	 */
 	String username;
-
 	/**
 	 * User realm.
 	 */
@@ -65,10 +65,6 @@ public class PublishAgent implements TransactionClientListener {
 	 * Nonce for the next authentication.
 	 */
 	String next_nonce;
-	/**
-	 * Qop for the next authentication.
-	 */
-	String qop;
 	/**
 	 * User's passwd.
 	 */
@@ -85,9 +81,6 @@ public class PublishAgent implements TransactionClientListener {
 	protected SipProvider sip_provider;
 	Context context;
 
-	/**
-	 * Costructs a new MessageAgent.
-	 */
 	public PublishAgent(SipProvider sip_provider, UserAgentProfile user_profile, String username, String realm, String passwd, Context context) {
 		this.sip_provider = sip_provider;
 		this.user_profile = user_profile;
@@ -95,14 +88,13 @@ public class PublishAgent implements TransactionClientListener {
 		this.realm = realm;
 		this.passwd = passwd;
 		this.next_nonce = null;
-		this.qop = null;
 		this.context = context;
 
 	}
 
 	public void publish() {
-		this.expire_time=SipStack.default_expires;
-		this.publish("open", expire_time, " ");
+		this.expire_time = SipStack.default_expires;
+		this.publish("open", expire_time, "");
 	}
 
 	public void publish(String status, int expireTime, String note) {
@@ -165,7 +157,6 @@ public class PublishAgent implements TransactionClientListener {
 
 	public void onTransFailureResponse(TransactionClient tc, Message resp) {
 		StatusLine status = resp.getStatusLine();
-		System.out.println("CheckCheck");
 		int code = status.getCode();
 		processAuthenticationResponse(tc, resp, code);
 	}
@@ -192,7 +183,6 @@ public class PublishAgent implements TransactionClientListener {
 				.getAuthorizationHeader();
 		req.setAuthorizationHeader(ah);
 		return true;
-
 	}
 
 	private boolean handleAuthentication(int respCode, Message resp, Message req) {
@@ -211,7 +201,11 @@ public class PublishAgent implements TransactionClientListener {
 	}
 
 	public void onTransProvisionalResponse(TransactionClient tc, Message resp) {
-
+		StatusLine status = resp.getStatusLine();
+		int code = status.getCode();
+		logger.fine(String.valueOf(status));
+		logger.fine(String.valueOf(code));
+		// FIXME
 	}
 
 
