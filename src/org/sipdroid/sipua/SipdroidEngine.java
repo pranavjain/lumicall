@@ -414,7 +414,9 @@ public class SipdroidEngine implements RegisterAgentListener {
 		}
 		register();
 		for (PublishAgent pa : pas) {
-			pa.publish();
+			if (pa != null) {
+				pa.publish();
+			}
 		}
 	}
 
@@ -497,7 +499,9 @@ public class SipdroidEngine implements RegisterAgentListener {
 			i++;
 		}
 		for (PublishAgent pa : pas) {
-			pa.publish();
+			if (pa != null) {
+				pa.publish();
+			}
 		}
 	}
 
@@ -533,6 +537,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 			if (pa != null) {
 				pa.publish();
 			}
+
 		}
 	}
 
