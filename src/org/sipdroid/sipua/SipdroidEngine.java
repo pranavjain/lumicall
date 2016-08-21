@@ -66,31 +66,21 @@ public class SipdroidEngine implements RegisterAgentListener {
 	public static final int UNINITIALIZED = 0x0;
 	public static final int INITIALIZED = 0x2;
 
-	/**
-	 * User Agent
-	 */
+	/** User Agent */
 	public UserAgent[] uas;
 	public UserAgent ua;
 
-	/**
-	 * Register Agent
-	 */
+	/**  Register Agent */
 	public RegisterAgent[] ras;
 
-	/**
-	 * Publish Agent
-	 */
+	/** Publish Agent */
 	public PublishAgent[] pas;
-	/**
-	 * Messaging
-	 */
+	/** Messaging */
 	public MessageAgent[] mas;
 
 	private KeepAliveSip[] kas;
 
-	/**
-	 * UserAgentProfile
-	 */
+	/** UserAgentProfile */
 	public UserAgentProfile[] user_profiles;
 
 	public SipProvider[] sip_providers;
@@ -585,7 +575,8 @@ public class SipdroidEngine implements RegisterAgentListener {
 
 	public boolean isRegistered(int i)
 	{
-		if (ras[i] == null) {
+		if (ras[i] == null)
+		{
 			return false;
 		}
 		return ras[i].isRegistered();
@@ -640,9 +631,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 
 	static long lasthalt, lastpwl;
 
-	/**
-	 * When a UA failed on (un)registering.
-	 */
+	/** When a UA failed on (un)registering. */
 	public void onUaRegistrationFailure(RegisterAgent reg_ra, NameAddress target,
 										NameAddress contact, String result) {
 		boolean retry = false;
@@ -696,9 +685,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 		}
 	} */
 
-	/**
-	 * Receives incoming calls (auto accept)
-	 */
+	/** Receives incoming calls (auto accept) */
 	public void listen() {
 		for (UserAgent ua : uas) {
 			if (ua != null) {
@@ -718,9 +705,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 		ua.info(c, duration);
 	}
 
-	/**
-	 * Makes a new call
-	 */
+	/**  Makes a new call */
 	public boolean call(String target_url, boolean force) {
 		int p = pref;
 
