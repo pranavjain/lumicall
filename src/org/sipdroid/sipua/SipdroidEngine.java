@@ -368,8 +368,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 
 	void setOutboundProxy(SipProvider sip_provider, int i) {
 		try {
-			if (sip_provider != null)
-				sip_provider.setOutboundProxy(new SocketAddress(
+			if (sip_provider != null) sip_provider.setOutboundProxy(new SocketAddress(
 						user_profiles[i].outbound_server_name,
 						user_profiles[i].outbound_server_port
 				));
@@ -425,8 +424,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 				user_profiles[i].username == null ||
 				user_profiles[i].username.equals("") ||
 				user_profiles[i].realm == null ||
-				user_profiles[i].realm.equals(""))
-			return;
+				user_profiles[i].realm.equals("")) return;
 
 		RegisterAgent ra = ras[i];
 		if (ra != null && ra.unregister()) {
@@ -555,8 +553,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 				}
 			if (wl[i].isHeld()) {
 				wl[i].release();
-				if (pwl[i] != null && pwl[i].isHeld())
-					pwl[i].release();
+				if (pwl[i] != null && pwl[i].isHeld()) pwl[i].release();
 			}
 			if (kas[i] != null) {
 				Receiver.alarm(0, LoopAlarm.class);
@@ -578,14 +575,16 @@ public class SipdroidEngine implements RegisterAgentListener {
 		}
 	}
 
-	public boolean isRegistered() {
+	public boolean isRegistered()
+	{
 		for (RegisterAgent ra : ras)
 			if (ra != null && ra.isRegistered())
 				return true;
 		return false;
 	}
 
-	public boolean isRegistered(int i) {
+	public boolean isRegistered(int i)
+	{
 		if (ras[i] == null) {
 			return false;
 		}
@@ -596,8 +595,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 										NameAddress contact, String result) {
 		int i = 0;
 		for (RegisterAgent ra : ras) {
-			if (ra == reg_ra)
-				break;
+			if (ra == reg_ra) break;
 			i++;
 		}
 		if (isRegistered(i)) {
@@ -611,8 +609,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 			Receiver.onText(Receiver.REGISTER_NOTIFICATION + i, null, 0, 0);
 		if (wl[i].isHeld()) {
 			wl[i].release();
-			if (pwl[i] != null && pwl[i].isHeld())
-				pwl[i].release();
+			if (pwl[i] != null && pwl[i].isHeld()) pwl[i].release();
 		}
 	}
 
@@ -621,12 +618,10 @@ public class SipdroidEngine implements RegisterAgentListener {
 	public void onMWIUpdate(RegisterAgent mwi_ra, boolean voicemail, int number, String vmacc) {
 		int i = 0;
 		for (RegisterAgent ra : ras) {
-			if (ra == mwi_ra)
-				break;
+			if (ra == mwi_ra) break;
 			i++;
 		}
-		if (i != pref)
-			return;
+		if (i != pref) return;
 		if (voicemail) {
 			String msgs = getUIContext().getString(R.string.voicemail);
 			if (number != 0) {
@@ -653,8 +648,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 		boolean retry = false;
 		int i = 0;
 		for (RegisterAgent ra : ras) {
-			if (ra == reg_ra)
-				break;
+			if (ra == reg_ra) break;
 			i++;
 		}
 		if (isRegistered(i)) {
@@ -670,12 +664,10 @@ public class SipdroidEngine implements RegisterAgentListener {
 				wl[i].release();
 			pwl[i].acquire();
 			register();
-			if (!wl[i].isHeld() && pwl[i].isHeld())
-				pwl[i].release();
+			if (!wl[i].isHeld() && pwl[i].isHeld()) pwl[i].release();
 		} else if (wl[i].isHeld()) {
 			wl[i].release();
-			if (pwl[i] != null && pwl[i].isHeld())
-				pwl[i].release();
+			if (pwl[i] != null && pwl[i].isHeld()) pwl[i].release();
 		}
 		if (SystemClock.uptimeMillis() > lasthalt + 45000) {
 			lasthalt = SystemClock.uptimeMillis();
@@ -712,7 +704,8 @@ public class SipdroidEngine implements RegisterAgentListener {
 			if (ua != null) {
 				ua.printLog("UAS: WAITING FOR INCOMING CALL");
 
-				if (!ua.user_profile.audio && !ua.user_profile.video) {
+				if (!ua.user_profile.audio && !ua.user_profile.video)
+				{
 					ua.printLog("ONLY SIGNALING, NO MEDIA");
 				}
 
@@ -745,8 +738,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 				p = pref;
 				if (Receiver.isFast(p))
 					found = true;
-				else
-					for (p = 0; p < lineCount; p++)
+				else for (p = 0; p < lineCount; p++)
 						if (Receiver.isFast(p)) {
 							found = true;
 							break;
@@ -829,13 +821,15 @@ public class SipdroidEngine implements RegisterAgentListener {
 
 		ua.printLog("UAC: CALLING " + target_url);
 
-		if (!ua.user_profile.audio && !ua.user_profile.video) {
+		if (!ua.user_profile.audio && !ua.user_profile.video)
+		{
 			ua.printLog("ONLY SIGNALING, NO MEDIA");
 		}
 		return ua.call(target_url, false);
 	}
 
-	public void answercall() {
+	public void answercall()
+	{
 		Receiver.stopRingtone();
 		ua.accept();
 	}
@@ -879,8 +873,7 @@ public class SipdroidEngine implements RegisterAgentListener {
 					ka.sendToken();
 					Receiver.alarm(60, LoopAlarm.class);
 				} catch (IOException e) {
-					if (!Sipdroid.release)
-						e.printStackTrace();
+					if (!Sipdroid.release) e.printStackTrace();
 				}
 			i++;
 		}
