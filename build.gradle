@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.3.1'
+        classpath 'com.android.tools.build:gradle:2.1.0'
     }
 }
 apply plugin: 'com.android.application'
@@ -20,7 +20,7 @@ dependencies {
     compile 'org.opentelecoms.ddds:nominet-ddds:1.0'
     compile 'info.ganglia.gmetric4j:gmetric4j:1.0.10'
     compile 'de.rtner:PBKDF2:1.1.1'
-    compile 'org.opentelecoms.sip:mjsip-fork:1.6+lumicall.2'
+    compile 'org.opentelecoms.sip:mjsip-fork:1.6+lumicall.3'
     compile ('org.opentelecoms.zrtp:zorg-zrtp:1.0.0+f.2') {
         // We exclude the transitive dependency Bouncy Castle and
         // use Spongy Castle instead because of the classpath issues
@@ -53,7 +53,7 @@ preBuild.doFirst {
 //          $ ${NDK_HOME}/ndk-build
 //
 preBuild.doFirst {
-    assert file("./libs/armeabi-v7a/libopus_jni.so").exists()
+   assert file("./libs/armeabi-v7a/libopus_jni.so").exists()
 }
 
 android {
