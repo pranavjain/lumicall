@@ -686,7 +686,8 @@ public class SipdroidEngine implements RegisterAgentListener {
 	} */
 
 	/** Receives incoming calls (auto accept) */
-	public void listen() {
+	public void listen()
+	{
 		for (UserAgent ua : uas) {
 			if (ua != null) {
 				ua.printLog("UAS: WAITING FOR INCOMING CALL");
