@@ -22,14 +22,15 @@
 
 package org.sipdroid.sipua;
 
-import android.content.Context;
-import android.content.SharedPreferences.Editor;
-import android.net.wifi.WifiManager;
-import android.os.Build;
-import android.os.PowerManager;
-import android.os.SystemClock;
-import android.preference.PreferenceManager;
-import android.util.Log;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.UnknownHostException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.cert.CertificateException;
+import java.util.List;
 
 import org.ice4j.StackProperties;
 import org.lumicall.android.AndroidTimerFactory;
@@ -37,7 +38,6 @@ import org.lumicall.android.R;
 import org.lumicall.android.db.LumicallDataSource;
 import org.lumicall.android.db.SIPIdentity;
 import org.lumicall.android.sip.DialCandidateHelper;
-import org.omnidial.harvest.DialCandidate;
 import org.sipdroid.net.KeepAliveSip;
 import org.sipdroid.sipua.ui.ChangeAccount;
 import org.sipdroid.sipua.ui.LoopAlarm;
@@ -53,10 +53,17 @@ import org.zoolu.sip.provider.SipProvider;
 import org.zoolu.sip.provider.SipStack;
 import org.zoolu.tools.Timer;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.KeyStore;
-import java.util.List;
+import android.content.Context;
+import android.content.SharedPreferences.Editor;
+import android.net.Uri;
+import android.net.wifi.WifiManager;
+import android.os.Build;
+import android.os.PowerManager;
+import android.os.SystemClock;
+import android.preference.PreferenceManager;
+import android.util.Log;
+
+import org.omnidial.harvest.DialCandidate;
 
 public class SipdroidEngine implements RegisterAgentListener {
 
